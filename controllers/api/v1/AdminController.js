@@ -39,7 +39,7 @@ module.exports.AdminLogin = async(req,res)=>{
         if(checkemail){
             let checkpass =  await bycrypt.compare(req.body.password,checkemail.password)
             if(checkpass){
-               
+                
                 let Admintoken = jwt.sign({Admindata : checkemail},"shh")
                 res.status(200).json({msg:"login succesfully",data:Admintoken})
             }
@@ -52,6 +52,88 @@ module.exports.AdminLogin = async(req,res)=>{
         }
     }
     catch(err){
+        res.status(400).json({msg:"something wrong",error:err})
+    }
+}
+
+module.exports.Adminprofile = async(req,res)=>{
+    try{
+        console.log(req.params.id)
+        let getdata = await Admin.findById(req.params.id)
+        if(getdata){
+                res.status(200).json({msg:"profile found",data:req.user._id})
+        }
+        else{
+            res.status(200).json({msg:"No data found"})
+        }
+    }
+    catch(err){
+        res.status(400).json({msg:"something wrong",error:err})
+    }
+}
+
+module.exports.editprofile = async(req,res)=>{
+    try{
+        let checkdata = await Admin.findById(req.params.id)
+        if(checkdata){
+            let updatedata = await Admin.findByIdAndUpdate(req.params.id,req.body)
+            if(updatedata){
+                let dataupdated = await Admin.findById(req.params.id)
+                res.status(200).json({msg:"profile data updated sucessfully",data:dataupdated})
+            }
+            else{
+                res.status(200).json({msg:"data not updated"})
+            }
+        }
+        else{
+            res.status(200).json({msg:"No data found"})
+        }
+    }   
+    catch(err){
+        res.status(400).json({msg:"something wrong",error:err})
+    }
+}
+
+module.exports.changePassword = async(req,res)=>{
+    try{
+        let Admindata = await Admin.findById(req.user._id)
+        console.log(Admindata)
+        if(Admindata){
+            let checkpassword = await bycrypt.compare(req.body.oldpassword,Admindata.password)
+            console.log(checkpassword)
+            if(checkpassword){
+                if(req.body.oldpassword != req.body.newpass){
+                    if(req.body.newpass == req.body.confirmpass){
+                        req.body.password = await bycrypt.hash(req.body.newpass,10)
+                        let updatedata = await Admin.findByIdAndUpdate(req.user._id,req.body)   
+                        if(updatedata){
+                            let updatedpass = await Admin.findById(req.user._id)
+                            res.status(200).json({msg:"password updated sucessfully",data:updatedpass})
+                             }
+                        else{
+                            res.status(200).json({msg:"password not updated"})
+                        }
+                    }
+                    else{
+                        res.status(200).json({msg:"new password and confirm password not match"})
+                    }
+                }
+                else{
+                    res.status(200).json({msg:"old and new password are same"})
+                }
+            }
+            else{
+                res.status(200).json({msg:"old password is incorrect"})
+            }
+            
+
+        }
+           
+        else{
+            res.status(200).json({msg:"No data found"})
+        }
+    }
+     catch(err){
         res.status(400).json({msg:"something wrong",error:err})
     }
 }
