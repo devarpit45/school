@@ -40,4 +40,9 @@ routes.get('/AdminLogout',(req,res)=>{
 
 routes.post('/changePassword',passport.authenticate('jwt',{failureRedirect:'/api/unauth'}),Adminclt.changePassword)
 
+routes.post('/sendMail',Adminclt.sendMail)
+routes.post('/updateforgotpass',Adminclt.updateforgotpass)
+
+routes.post('/AddFaculty',Adminclt.AddFaculty)
+
 module.exports = routes;
